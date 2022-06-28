@@ -26,7 +26,7 @@ exports.get = async (req, res, next) => {
         results: {
             query_params: req.query,
             data: transactions[0],
-            page: page,
+            page: Number.parseInt(page),
             total: transactions[1]
         }
     });
