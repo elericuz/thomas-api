@@ -1,0 +1,19 @@
+logs/*
+!.gitkeep
+node_modules/
+tmp
+.DS_Store
+.idea
+CAS
+CAS.pub
+public/dist/bundle.js
+src/
+webpack.config.js
+public/pdf/
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
+nodemon.json
+.dockerignore
