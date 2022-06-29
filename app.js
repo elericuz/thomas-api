@@ -40,7 +40,13 @@ app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true }));
 
 const transactionRoutes = require('./api/routes/transaction');
+const stationRoutes = require('./api/routes/stations');
+const operationRoutes = require('./api/routes/operations');
+const fareRoutes = require('./api/routes/fares');
 app.use('/transactions', transactionRoutes);
+app.use('/stations', stationRoutes);
+app.use('/operations', operationRoutes);
+app.use('/fares', fareRoutes);
 
 // error page
 app.use((req, res) => {
