@@ -9,17 +9,26 @@ const transactionSchema = new mongoose.Schema({
     name_station: {
         type: String,
     },
-    reference_id: {
+    terminal: {
         type: String,
     },
     operation_type: {
         type: String,
     },
-    sw_serial_number: {
+    external_number: {
         type: String,
     },
-    media_serial_number: {
-        type: String,
+    internal_number: {
+        type: Number,
+        default: 0
+    },
+    card_transaction_number: {
+        type: Number,
+        default: 0
+    },
+    former_purse: {
+        type: Number,
+        default: 0
     },
     amount: {
         type: Number,
@@ -29,6 +38,11 @@ const transactionSchema = new mongoose.Schema({
     purse: {
         type: Number,
         default: 0,
+        required: true
+    },
+    document_id: {
+        type: String,
+        default: "0",
         required: true
     },
     fare: {

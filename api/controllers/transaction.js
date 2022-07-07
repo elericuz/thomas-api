@@ -51,17 +51,23 @@ async function saveTransaction(data) {
 async function getTransactions(query, skip = 1, limit = 32) {
     let criteria = {};
     if (!_.isEmpty(query)) {
-        if (!_.isUndefined(query.name_station)) {
+        if (!_.isUndefined(query.name_station) && !_.isEmpty(query.name_station)) {
             criteria.name_station = query.name_station;
         }
-        if (!_.isUndefined(query.fare)) {
+        if (!_.isUndefined(query.fare) && !_.isEmpty(query.fare)) {
             criteria.fare = _.escape(query.fare);
         }
-        if (!_.isUndefined(query.operation_type)) {
+        if (!_.isUndefined(query.operation_type) && !_.isEmpty(query.operation_type)) {
             criteria.operation_type = query.operation_type;
         }
+        if (!_.isUndefined(query.external_number) && !_.isEmpty(query.external_number)) {
+            criteria.external_number = query.external_number;
+        }
+        if (!_.isUndefined(query.document_id) && !_.isEmpty(query.document_id)) {
+            criteria.document_id = query.document_id;
+        }
 
-        if (!_.isUndefined(query.date)) {
+        if (!_.isUndefined(query.date) && !_.isEmpty(query.date)) {
             let startDate = new Date(query.date);
             let endDate = new Date(query.date);
             endDate.setDate(startDate.getDate()+1);
