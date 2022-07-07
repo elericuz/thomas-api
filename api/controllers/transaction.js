@@ -22,12 +22,26 @@ exports.get = async (req, res, next) => {
 
     let transactions = await getTransactions(query, skip, Number.parseInt(limit));
 
+    let options = {
+        timeZone: 'America/Lima'
+    }
+
+    var items = transactions[0].map(function(item) {
+        item.date = new Date(item.date).toLocaleString('en-US', options);
+        item.createdAt = new Date(item.createdAt).toLocaleString('en-US', options);
+        item.updatedAt = new Date(item.updatedAt).toLocaleString('en-US', options);
+
+        return item
+    })
+
+    let total = transactions[1]
+
     res.status(200).json({
         results: {
             query_params: req.query,
-            data: transactions[0],
+            data: items,
             page: Number.parseInt(page),
-            total: transactions[1]
+            total: total
         }
     });
 }
