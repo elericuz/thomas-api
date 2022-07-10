@@ -90,15 +90,15 @@ async function getTransactions(query, skip = 1, limit = 32) {
         }
     }
 
-    let totalTransactions = await Transaction.find(criteria)
-        .countDocuments()
-        .then(result => { return result; })
-        .catch(err => console.log(err));
-
     let transactions = await Transaction.find(criteria)
         .sort({date: 'desc'})
         .skip(skip)
         .limit(limit)
+        .then(result => { return result; })
+        .catch(err => console.log(err));
+
+    let totalTransactions = await Transaction.find(criteria)
+        .estimatedDocumentCount()
         .then(result => { return result; })
         .catch(err => console.log(err));
 
