@@ -75,7 +75,7 @@ async function getTransactions(query, skip = 1, limit = 32) {
             criteria.operation_type = query.operation_type;
         }
         if (!_.isUndefined(query.external_number) && !_.isEmpty(query.external_number)) {
-            criteria.external_number = query.external_number;
+            criteria.external_number = query.external_number
         }
         if (!_.isUndefined(query.document_id) && !_.isEmpty(query.document_id)) {
             criteria.document_id = query.document_id;
@@ -97,8 +97,7 @@ async function getTransactions(query, skip = 1, limit = 32) {
         .then(result => { return result; })
         .catch(err => console.log(err));
 
-    let totalTransactions = await Transaction.find(criteria)
-        .estimatedDocumentCount()
+    let totalTransactions = await Transaction.estimatedDocumentCount()
         .then(result => { return result; })
         .catch(err => console.log(err));
 
