@@ -51,9 +51,8 @@ exports.add = async (req, res, next) => {
     try {
         console.log(transaction._id);
     } catch (e) {
-        console.log(e.message)
         console.log(req.body);
-        console.log("======== END OF ISSUE ========")
+        console.log("======== END OF THE ISSUE ========")
     }
 
     res.status(200).json({
@@ -65,7 +64,11 @@ async function saveTransaction(data) {
     let transaction = new Transaction(data);
     return transaction.save()
         .then(result => { return result })
-        .catch(err => console.log(err.message));
+        .catch(err => {
+            console.log("======== BEGGINING OF THE ISSUE ========")
+            console.log("Something went wrong")
+            console.log(err.message)
+        });
 }
 
 async function getTransactions(query, skip = 1, limit = 32) {
