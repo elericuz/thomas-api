@@ -47,6 +47,9 @@ const transactionSchema = new mongoose.Schema({
     },
     fare: {
         type: String,
+    },
+    json_file: {
+        type: String,
     }
 }, {
     timestamps: true
