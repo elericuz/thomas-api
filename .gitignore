@@ -17,3 +17,5 @@ public/pdf/
 !.elasticbeanstalk/*.global.yml
 nodemon.json
 .dockerignore
+
+log/

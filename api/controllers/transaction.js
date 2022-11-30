@@ -1,7 +1,22 @@
 const _ = require('lodash');
 const moment = require('moment');
 const jwt = require('jsonwebtoken');
+const { createLogger, format, transports } = require('winston');
+const { combine, timestamp, label, prettyPrint } = format;
 const Transaction = require('../models/transactions')
+const Balance = require('../models/balances')
+
+const logger = createLogger({
+    format: combine(
+        label({ label: 'Transactions' }),
+        timestamp(),
+        prettyPrint()
+    ),
+    transports: [
+        new transports.File({ filename: 'log/error.log', level: 'error'}),
+        new transports.File({ filename: 'log/combined.log'})
+    ]
+})
 
 exports.get = async (req, res, next) => {
     let query = req.query;
@@ -60,14 +75,83 @@ exports.add = async (req, res, next) => {
     });
 }
 
+async function updateBalance(internalNumber, operationType, amount) {
+    let purse = operationType == "uso" ? -amount : amount
+
+    let balance = await Balance.findOne({
+        internal_number: internalNumber
+    })
+    .then( result => { return result })
+    .catch((err => console.log(result)))
+
+    if (_.isNull(balance)) {
+        let newBalance = {
+            internal_number: internalNumber,
+            balance: amount,
+            transactions: 1
+        }
+
+        return await new Balance(newBalance)
+            .save()
+            .then( result => { return result })
+            .catch(err => console.log(err))
+    } else {
+        let newBalance = parseFloat(balance.balance) + parseFloat(purse)
+        let transactions = parseInt(balance.transactions) + 1
+
+        let data = { internal_number: internalNumber, balance: newBalance, transactions: transactions }
+
+        return await Balance.findByIdAndUpdate(balance._id, data)
+            .then( result => {
+                result.balance = newBalance
+                result.transactions = transactions
+
+                return result
+            })
+            .catch(err => {
+                let message = {
+                    message: "Something went wrong. We couldn't update the balance",
+                    error: err.message,
+                    data: data
+                }
+
+                logger.error(message)
+            })
+    }
+}
+
 async function saveTransaction(data) {
     let transaction = new Transaction(data);
+
     return transaction.save()
-        .then(result => { return result })
+        .then(async result => {
+            let balance = await updateBalance(data.internal_number, data.operation_type, data.amount)
+
+            logger.info({
+                message: "Transaction added",
+                data: {
+                    internal_number: data.internal_number,
+                    operation_type: data.operation_type,
+                    date: data.date,
+                    amount: data.amount,
+                    balance: balance
+                }
+            })
+
+            return result
+        })
         .catch(err => {
             console.log("======== BEGGINING OF THE ISSUE ========")
             console.log("Something went wrong")
             console.log(err.message)
+
+            let message = {
+                message: "Something went wrong",
+                error: err.message,
+                data: data
+            }
+
+            logger.error(message)
         });
 }
 
