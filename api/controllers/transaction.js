@@ -129,6 +129,7 @@ async function saveTransaction(data) {
 
             logger.info({
                 message: "Transaction added",
+                id: result._id,
                 data: {
                     internal_number: data.internal_number,
                     operation_type: data.operation_type,
