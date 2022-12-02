@@ -135,7 +135,8 @@ async function saveTransaction(data) {
                     operation_type: data.operation_type,
                     date: data.date,
                     amount: data.amount,
-                    balance: balance
+                    balance: balance,
+                    json_file: result.json_file
                 }
             })
 
