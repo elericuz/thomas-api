@@ -5,7 +5,7 @@ const http = require('http');
 const mongoose = require('mongoose');
 const app = require('./app');
 
-const PORT = 3000;
+const PORT = process.env.DEFAULT_PORT;
 const HOST = '0.0.0.0';
 
 const server = http.createServer(app);
