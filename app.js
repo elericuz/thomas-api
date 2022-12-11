@@ -43,10 +43,12 @@ const transactionRoutes = require('./api/routes/transaction');
 const stationRoutes = require('./api/routes/stations');
 const operationRoutes = require('./api/routes/operations');
 const fareRoutes = require('./api/routes/fares');
+const balanceRoutes = require('./api/routes/balances');
 app.use('/transactions', transactionRoutes);
 app.use('/stations', stationRoutes);
 app.use('/operations', operationRoutes);
 app.use('/fares', fareRoutes);
+app.use('/balances', balanceRoutes);
 
 // error page
 app.use((req, res) => {
