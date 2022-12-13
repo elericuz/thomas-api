@@ -50,13 +50,15 @@ exports.get = async (req, res, next) => {
     })
 
     let total = transactions[1]
+    let totalPages = transactions[2]
 
     res.status(200).json({
         results: {
             query_params: req.query,
             data: items,
+            total: total,
             page: Number.parseInt(page),
-            total: total
+            totalPages: totalPages
         }
     });
 }
@@ -192,9 +194,10 @@ async function getTransactions(query, skip = 1, limit = 32) {
         .then(result => { return result; })
         .catch(err => console.log(err));
 
-    let totalTransactions = await Transaction.estimatedDocumentCount()
+    let totalTransactions = await Transaction.find(criteria).count()
+    // let totalTransactions = await Transaction.estimatedDocumentCount()
         .then(result => { return result; })
         .catch(err => console.log(err));
 
-    return [transactions, _.ceil((totalTransactions/limit), 0) ];
+    return [transactions, totalTransactions, _.ceil((totalTransactions/limit), 0) ];
 }

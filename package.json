@@ -22,7 +22,8 @@
     "morgan": "^1.10.0",
     "puppeteer": "^10.1.0",
     "request": "^2.88.2",
-    "winston": "^3.8.2"
+    "winston": "^3.8.2",
+    "cors": "^2.8.5"
   },
   "devDependencies": {
     "nodemon": "^1.12.1"

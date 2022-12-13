@@ -3,6 +3,7 @@ const express = require('express');
 const moment = require('moment');
 const lodash = require('lodash');
 const jwt = require('jsonwebtoken');
+const cors = require('cors');
 const cookieParser = require('cookie-parser');
 
 // App
@@ -19,6 +20,11 @@ app.use((req, res, next) => {
     res.locals._ = lodash;
     next();
 })
+
+// cors
+app.use(cors({
+    origin: '*'
+}));
 
 // token to the whole site
 app.use((req, res, next) => {
