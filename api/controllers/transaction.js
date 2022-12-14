@@ -1,36 +1,36 @@
 const _ = require('lodash');
 const moment = require('moment');
 const jwt = require('jsonwebtoken');
-const { createLogger, format, transports } = require('winston');
-const { combine, timestamp, label, prettyPrint } = format;
+const {createLogger, format, transports} = require('winston');
+const {combine, timestamp, label, prettyPrint} = format;
 const Transaction = require('../models/transactions')
 const Balance = require('../models/balances')
 
 const logger = createLogger({
     format: combine(
-        label({ label: 'Transactions' }),
+        label({label: 'Transactions'}),
         timestamp(),
         prettyPrint()
     ),
     transports: [
-        new transports.File({ filename: 'log/error.log', level: 'error'}),
-        new transports.File({ filename: 'log/combined.log'})
+        new transports.File({filename: 'log/error.log', level: 'error'}),
+        new transports.File({filename: 'log/combined.log'})
     ]
 })
 
 exports.get = async (req, res, next) => {
     let query = req.query;
     let page = query.page;
-    if (_.isUndefined(page) || !Number.isInteger(page*1)) {
+    if (_.isUndefined(page) || !Number.isInteger(page * 1)) {
         page = 1;
     }
 
     let limit = query.limit;
-    if (_.isUndefined(limit) || !Number.isInteger(limit*1)) {
+    if (_.isUndefined(limit) || !Number.isInteger(limit * 1)) {
         limit = 32;
     }
 
-    const skip = (page === 1) ? 0 : (limit * (page-1));
+    const skip = (page === 1) ? 0 : (limit * (page - 1));
 
     delete query.page;
     delete query.limit;
@@ -41,7 +41,7 @@ exports.get = async (req, res, next) => {
         timeZone: 'America/Lima'
     }
 
-    var items = transactions[0].map(function(item) {
+    var items = transactions[0].map(function (item) {
         item.date = new Date(item.date).toLocaleString('en-US', options);
         item.createdAt = new Date(item.createdAt).toLocaleString('en-US', options);
         item.updatedAt = new Date(item.updatedAt).toLocaleString('en-US', options);
@@ -78,13 +78,15 @@ exports.add = async (req, res, next) => {
 }
 
 async function updateBalance(internalNumber, operationType, amount) {
-    let purse = operationType == "uso" ? -amount : amount
+    let purse = operationType === "uso" ? -amount : amount
 
     let balance = await Balance.findOne({
         internal_number: internalNumber
     })
-    .then( result => { return result })
-    .catch((err => console.log(result)))
+        .then(result => {
+            return result
+        })
+        .catch((err => console.log(result)))
 
     if (_.isNull(balance)) {
         let newBalance = {
@@ -95,16 +97,18 @@ async function updateBalance(internalNumber, operationType, amount) {
 
         return await new Balance(newBalance)
             .save()
-            .then( result => { return result })
+            .then(result => {
+                return result
+            })
             .catch(err => console.log(err))
     } else {
         let newBalance = parseFloat(balance.balance) + parseFloat(purse)
         let transactions = parseInt(balance.transactions) + 1
 
-        let data = { internal_number: internalNumber, balance: newBalance, transactions: transactions }
+        let data = {internal_number: internalNumber, balance: newBalance, transactions: transactions}
 
         return await Balance.findByIdAndUpdate(balance._id, data)
-            .then( result => {
+            .then(result => {
                 result.balance = newBalance
                 result.transactions = transactions
 
@@ -127,7 +131,7 @@ async function saveTransaction(data) {
 
     return transaction.save()
         .then(async result => {
-            let balance = await updateBalance(data.internal_number, data.operation_type, data.amount)
+            let balance = data.operation_type === "venta" ? 0 : await updateBalance(data.internal_number, data.operation_type, data.amount)
 
             logger.info({
                 message: "Transaction added",
@@ -181,9 +185,9 @@ async function getTransactions(query, skip = 1, limit = 32) {
         if (!_.isUndefined(query.date) && !_.isEmpty(query.date)) {
             let startDate = new Date(query.date);
             let endDate = new Date(query.date);
-            endDate.setDate(startDate.getDate()+1);
+            endDate.setDate(startDate.getDate() + 1);
 
-            criteria.date = { $gte: startDate, $lt: endDate };
+            criteria.date = {$gte: startDate, $lt: endDate};
         }
     }
 
@@ -191,13 +195,17 @@ async function getTransactions(query, skip = 1, limit = 32) {
         .sort({date: 'desc'})
         .skip(skip)
         .limit(limit)
-        .then(result => { return result; })
+        .then(result => {
+            return result;
+        })
         .catch(err => console.log(err));
 
     let totalTransactions = await Transaction.find(criteria).count()
-    // let totalTransactions = await Transaction.estimatedDocumentCount()
-        .then(result => { return result; })
+        // let totalTransactions = await Transaction.estimatedDocumentCount()
+        .then(result => {
+            return result;
+        })
         .catch(err => console.log(err));
 
-    return [transactions, totalTransactions, _.ceil((totalTransactions/limit), 0) ];
+    return [transactions, totalTransactions, _.ceil((totalTransactions / limit), 0)];
 }
