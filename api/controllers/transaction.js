@@ -86,7 +86,7 @@ async function updateBalance(internalNumber, operationType, amount) {
         .then(result => {
             return result
         })
-        .catch((err => console.log(result)))
+        .catch((err => console.log(err)))
 
     if (_.isNull(balance)) {
         let newBalance = {
