@@ -19,3 +19,4 @@ nodemon.json
 .dockerignore
 
 log/
+.env
