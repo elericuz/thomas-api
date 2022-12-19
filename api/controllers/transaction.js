@@ -5,6 +5,7 @@ const {createLogger, format, transports} = require('winston');
 const {combine, timestamp, label, prettyPrint} = format;
 const Transaction = require('../models/transactions')
 const Balance = require('../models/balances')
+const {isNumber} = require('../helpers/utils');
 
 const logger = createLogger({
     format: combine(
@@ -19,6 +20,32 @@ const logger = createLogger({
 })
 
 exports.get = async (req, res, next) => {
+    let query = req.query;
+    let limit = _.isUndefined(query.limit) ? 16 : query.limit;
+    limit = (!isNumber(limit)) ? 32 : _.parseInt(limit);
+    let page = _.isUndefined(query.page) ? 1 : query.page;
+    page = (!isNumber(page)) ? 1 : _.parseInt(page);
+
+    const skip = (page === 1) ? 0 : (limit * (page - 1));
+
+    let transactions = await getTransaction(query, skip, limit);
+
+    res.status(200).json({
+        results: {
+            query_params: req.query,
+            data: {
+                card_info: transactions[0].card_info,
+                transactions: transactions[0].transactions,
+                balance: transactions[0].balance,
+                total: transactions[0].total[0].count,
+                page: Number.parseInt(page),
+                totalPages: _.ceil(transactions[0].total[0].count / limit)
+            }
+        }
+    })
+}
+
+exports.list = async (req, res, next) => {
     let query = req.query;
     let page = query.page;
     if (_.isUndefined(page) || !Number.isInteger(page * 1)) {
@@ -35,7 +62,7 @@ exports.get = async (req, res, next) => {
     delete query.page;
     delete query.limit;
 
-    let transactions = await getTransactions(query, skip, Number.parseInt(limit));
+    let transactions = await listTransactions(query, skip, Number.parseInt(limit));
 
     let options = {
         timeZone: 'America/Lima'
@@ -163,7 +190,7 @@ async function saveTransaction(data) {
         });
 }
 
-async function getTransactions(query, skip = 1, limit = 32) {
+async function listTransactions(query, skip = 1, limit = 32) {
     let criteria = {};
     if (!_.isEmpty(query)) {
         if (!_.isUndefined(query.name_station) && !_.isEmpty(query.name_station)) {
@@ -201,11 +228,83 @@ async function getTransactions(query, skip = 1, limit = 32) {
         .catch(err => console.log(err));
 
     let totalTransactions = await Transaction.find(criteria).count()
-        // let totalTransactions = await Transaction.estimatedDocumentCount()
         .then(result => {
             return result;
         })
         .catch(err => console.log(err));
 
     return [transactions, totalTransactions, _.ceil((totalTransactions / limit), 0)];
+}
+
+async function getTransaction(query, skip, limit) {
+    return await Transaction.aggregate([
+        {
+            $match: {external_number: query.external_number}
+        },
+        {
+            $facet: {
+                "transactions": [
+                    {
+                        $sort: {date: -1}
+                    },
+                    {$skip: skip},
+                    {$limit: limit}
+                ],
+                "card_info": [
+                    {
+                        $limit: 1
+                    },
+                    {
+                        $project: {
+                            _id: 0,
+                            internal_number: "$internal_number",
+                            external_number: "$external_number",
+                            document_id: "$document_id"
+                        }
+                    }
+                ],
+                "total": [
+                    {
+                        $count: "count"
+                    }
+                ],
+                "balance": [
+                    {
+                        $project: {
+                            _id: 0,
+                            number: "$internal_number",
+                            carga: {
+                                $cond: [
+                                    {
+                                        $eq: ["$operation_type", "carga"]
+                                    },
+                                    "$amount",
+                                    {
+                                        $cond: [
+                                            {
+                                                $eq: ["$operation_type", "uso"]
+                                            },
+                                            {$multiply: [-1, "$amount"]},
+                                            0
+                                        ]
+                                    }
+                                ]
+                            },
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: "$number",
+                            balance: {$sum: "$carga"},
+                            total_transactions: {$sum: 1}
+                        },
+                    }
+                ]
+            }
+        }
+    ]).then(result => {
+        return result;
+    }).catch(err => {
+        console.log(err);
+    });
 }
