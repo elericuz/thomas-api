@@ -111,7 +111,7 @@ exports.brief = async (req, res, next) => {
         .subtract(5, 'minute')
         .startOf('minute')
         .format()
-    let endDate = moment().add(-fixHours, 'hours').tz('America/Lima')
+    let endDate = moment().add(fixHours, 'hours').tz('America/Lima')
         .endOf('minute')
         .format()
 
