@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const moment = require('moment');
+const moment = require('moment-timezone');
 const jwt = require('jsonwebtoken');
 const {createLogger, format, transports} = require('winston');
 const {combine, timestamp, label, prettyPrint} = format;
@@ -102,6 +102,36 @@ exports.add = async (req, res, next) => {
     res.status(200).json({
         success: true
     });
+}
+
+exports.brief = async (req, res, next) => {
+    let startDate = moment().tz('America/Lima')
+        .subtract(5, 'minute')
+        .startOf('minute')
+        .format()
+    let endDate = moment().tz('America/Lima')
+        .endOf('minute')
+        .format()
+
+    let brief = await getBrief(startDate, endDate);
+
+    if (_.isEmpty(brief)) {
+        brief = [
+            {
+                by_station: [],
+                by_fare: [],
+                by_type: []
+            }
+        ]
+    }
+
+    res.status(200).json({
+        results: {
+            startDate: startDate,
+            endDate: endDate,
+            data: brief
+        }
+    })
 }
 
 async function updateBalance(internalNumber, operationType, amount) {
@@ -300,6 +330,98 @@ async function getTransaction(query, skip, limit) {
                         },
                     }
                 ]
+            }
+        }
+    ]).then(result => {
+        return result;
+    }).catch(err => {
+        console.log(err);
+    });
+}
+
+async function getBrief(startDate, endDate) {
+    return await Transaction.aggregate([
+        {
+            $match: {
+                date: {$gte: new Date(startDate), $lt: new Date(endDate)}
+            }
+        },
+        {
+            $facet: {
+                "people_at_stations": [
+                    {$match: {operation_type: "uso"}},
+                    {
+                        $group: {_id: "$name_station", count: {$sum: 1}, paid: {$sum: "$amount"}}
+                    },
+                    {
+                        $sort: {count: -1}
+                    },
+                    {
+                        $project: {
+                            _id: 0,
+                            station: "$_id",
+                            total: "$count",
+                            paid: "$paid"
+                        }
+                    }
+                ],
+
+                "people_by_fare": [
+                    {$match: {operation_type: "uso"}},
+                    {
+                        $group: {_id: "$fare", count: {$sum: 1}, paid: {$sum: "$amount"}}
+                    },
+                    {
+                        $sort: {count: -1}
+                    },
+                    {
+                        $project: {
+                            _id: 0,
+                            fare: "$_id",
+                            total: "$count",
+                            paid: "$paid"
+                        }
+                    }
+                ],
+                "by_type": [
+                    {
+                        $group: {_id: "$operation_type", count: {$sum: 1}, paid: {$sum: "$amount"}}
+                    },
+                    {
+                        $sort: {count: -1}
+                    },
+                    {
+                        $project: {
+                            _id: 0,
+                            operation_type: "$_id",
+                            total: "$count",
+                            paid: "$paid"
+                        }
+                    }
+                ],
+                "total_people": [
+                    {$match: {operation_type: "uso"}},
+                    {
+                        $group: {_id: null, count: {$sum: 1}}
+                    },
+                    {
+                        $project: {
+                            _id: 0,
+                            total: "$count"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            $unwind: "$total_people"
+        },
+        {
+            $project: {
+                by_station: "$people_at_stations",
+                by_fare: "$people_by_fare",
+                by_type: "$by_type",
+                total_people: "$total_people.total"
             }
         }
     ]).then(result => {
