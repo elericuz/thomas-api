@@ -7,6 +7,8 @@ const Transaction = require('../models/transactions')
 const Balance = require('../models/balances')
 const {isNumber} = require('../helpers/utils');
 
+const fixHours = process.env.ENVIRONMENT === "PRODUCTION" ? -5 : 0
+
 const logger = createLogger({
     format: combine(
         label({label: 'Transactions'}),
@@ -105,16 +107,13 @@ exports.add = async (req, res, next) => {
 }
 
 exports.brief = async (req, res, next) => {
-    let startDate = moment().add(-5, 'hours').tz('America/Lima')
+    let startDate = moment().add(fixHours, 'hours').tz('America/Lima')
         .subtract(5, 'minute')
         .startOf('minute')
         .format()
-    let endDate = moment().add(-5, 'hours').tz('America/Lima')
+    let endDate = moment().add(-fixHours, 'hours').tz('America/Lima')
         .endOf('minute')
         .format()
-
-    console.log(startDate);
-    console.log(_.toString(startDate));
 
     let brief = await getBrief(_.toString(startDate), _.toString(endDate));
 
