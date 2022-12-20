@@ -105,11 +105,11 @@ exports.add = async (req, res, next) => {
 }
 
 exports.brief = async (req, res, next) => {
-    let startDate = moment().tz('America/Lima')
+    let startDate = moment().add(-5, 'hours').tz('America/Lima')
         .subtract(5, 'minute')
         .startOf('minute')
         .format()
-    let endDate = moment().tz('America/Lima')
+    let endDate = moment().add(-5, 'hours').tz('America/Lima')
         .endOf('minute')
         .format()
 
