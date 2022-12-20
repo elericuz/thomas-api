@@ -114,8 +114,9 @@ exports.brief = async (req, res, next) => {
         .format()
 
     console.log(startDate);
+    console.log(_.toString(startDate));
 
-    let brief = await getBrief(startDate, endDate);
+    let brief = await getBrief(_.toString(startDate), _.toString(endDate));
 
     if (_.isEmpty(brief)) {
         brief = [
