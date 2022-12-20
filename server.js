@@ -15,9 +15,9 @@ const server = http.createServer(app);
 mongoose.set('useFindAndModify', false);
 mongoose.set('useCreateIndex', true);
 
-let dbUri = "mongodb://" + process.env.MONGO_USER + ":" + process.env.MONGO_PASSWORD + "@" + process.env.MONGO_SERVER + "/" + process.env.MONGO_PORT + "?authSource=admin&retryWrites=true&w=1"
+let dbUri = "mongodb://" + process.env.MONGO_USER + ":" + process.env.MONGO_PASSWORD + "@" + process.env.MONGO_SERVER + ":" + process.env.MONGO_PORT + "/" + process.env.MONGO_DB_DEV + "?authSource=admin&retryWrites=true&w=1"
 if (process.env.ENVIRONMENT == "DEVELOPMENT") {
-    dbUri = "mongodb://" + process.env.MONGO_USER_DEV + ":" + process.env.MONGO_PASSWORD_DEV + "@" + process.env.MONGO_SERVER_DEV + "/" + process.env.MONGO_DB_DEV + "?authSource=admin&retryWrites=true&w=1"
+    dbUri = "mongodb://" + process.env.MONGO_USER_DEV + ":" + process.env.MONGO_PASSWORD_DEV + "@" + process.env.MONGO_SERVER_DEV + ":" + process.env.MONGO_PORT + "/" + process.env.MONGO_DB_DEV + "?authSource=admin&retryWrites=true&w=1"
 }
 
 mongoose.connect(dbUri, {useNewUrlParser: true, useUnifiedTopology: true})

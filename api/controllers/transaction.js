@@ -7,7 +7,7 @@ const Transaction = require('../models/transactions')
 const Balance = require('../models/balances')
 const {isNumber} = require('../helpers/utils');
 
-const fixHours = process.env.ENVIRONMENT === "PRODUCTION" ? -5 : 0
+const fixHours = process.env.ENVIRONMENT === "PRODUCTION" ? process.env.FIXHOURS : 0
 
 const logger = createLogger({
     format: combine(

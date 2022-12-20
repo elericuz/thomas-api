@@ -15,6 +15,7 @@
     "MONGO_PORT_DEV": "27017",
     "MONGO_DB_DEV": "THE_DATABASE",
 
-    "DEFAULT_PORT": 3000
+    "DEFAULT_PORT": 3000,
+    "FIXHOURS": 0
   }
 }
