@@ -105,13 +105,15 @@ exports.add = async (req, res, next) => {
 }
 
 exports.brief = async (req, res, next) => {
-    let startDate = moment()
+    let startDate = moment().tz('America/Lima')
         .subtract(5, 'minute')
         .startOf('minute')
         .format()
-    let endDate = moment()
+    let endDate = moment().tz('America/Lima')
         .endOf('minute')
         .format()
+
+    console.log(startDate);
 
     let brief = await getBrief(startDate, endDate);
 
